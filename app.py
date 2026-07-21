@@ -1,8 +1,15 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
-from datetime import datetime, time, timedelta, timezone # Tambahkan timedelta dan timezone
+from datetime import datetime, time, timedelta, timezone
 
-app = Flask(__name__)
+# --- KUNCI JALUR FOLDER TEMPLATES UNTUK VERCEL ---
+base_dir = os.path.abspath(os.path.dirname(__file__))
+template_dir = os.path.join(base_dir, 'templates')
+
+app = Flask(__name__, template_folder=template_dir)
 app.secret_key = 'kunci_rahasia_untuk_sesi'
+# --------------------------------------------------
+
 
 # Data dummy akun karyawan Anda
 users = {'Biyan': '66666', 'Pammy': '77777', 'Fakhri': '88888', 'Tommy': '99999', 'Azzam': '00000'}
