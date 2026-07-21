@@ -1,0 +1,103 @@
+import os
+from flask import Flask, render_template, request, redirect, url_for, session
+from authlib.integrations.flask_client import OAuth
+from datetime import datetime, time # Tambahkan 'time' di sini
+
+app = Flask(__name__)
+app.secret_key = 'kunci_rahasia_untuk_sesi'
+os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# Konfigurasi Google OAuth
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id='GANTI_DENGAN_CLIENT_ID_GOOGLE_ANDA',
+    client_secret='GANTI_DENGAN_CLIENT_SECRET_GOOGLE_ANDA',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
+
+absen_data = []
+
+@app.route('/')
+def home():
+    if 'user_email' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/login/google')
+def login_google():
+    redirect_uri = url_for('auth', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth')
+def auth():
+    token = google.authorize_access_token()
+    user_info = token.get('userinfo')
+    
+    if user_info:
+        session['user_email'] = user_info['email']
+        session['user_name'] = user_info['name']
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+        
+    user_email = session['user_email']
+    user_name = session['user_name']
+    
+    pesan_sukses = None
+    pesan_error = None
+    
+    if request.method == 'POST':
+        waktu_sekarang = datetime.now()
+        jam_sekarang = waktu_sekarang.time() # Mengambil jamnya saja
+        waktu_str = waktu_sekarang.strftime("%Y-%m-%d %H:%M:%S")
+        jenis_absen = request.form['jenis_absen']
+        
+        # Batas Waktu Absen
+        batas_awal_masuk = time(6, 0)   # 06:00
+        batas_akhir_masuk = time(7, 0)  # 07:00
+        batas_awal_keluar = time(12, 0) # 12:00
+        batas_akhir_keluar = time(17, 0)# 17:00
+
+        # Validasi Jam Absen Masuk
+        if jenis_absen == 'Masuk':
+            if batas_awal_masuk <= jam_sekarang <= batas_akhir_masuk:
+                absen_data.append({'email': user_email, 'nama': user_name, 'waktu': waktu_str, 'jenis': jenis_absen})
+                pesan_sukses = f"Berhasil absen MASUK pada {waktu_str}"
+            else:
+                pesan_error = "Gagal! Absen MASUK hanya diperbolehkan pukul 06:00 - 07:00."
+
+        # Validasi Jam Absen Keluar
+        elif jenis_absen == 'Keluar':
+            if batas_awal_keluar <= jam_sekarang <= batas_akhir_keluar:
+                absen_data.append({'email': user_email, 'nama': user_name, 'waktu': waktu_str, 'jenis': jenis_absen})
+                pesan_sukses = f"Berhasil absen KELUAR pada {waktu_str}"
+            else:
+                pesan_error = "Gagal! Absen KELUAR hanya diperbolehkan pukul 12:00 - 17:00."
+        
+    # Ambil riwayat absen khusus karyawan ini
+    riwayat_user = [data for data in absen_data if data['email'] == user_email]
+    
+    return render_template('dashboard.html', 
+                           user_name=user_name, 
+                           user_email=user_email, 
+                           pesan_sukses=pesan_sukses, 
+                           pesan_error=pesan_error, 
+                           riwayat=riwayat_user)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
