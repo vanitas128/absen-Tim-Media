@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Absensi</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; color: #333;">
+    <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div>
+            <h2 style="margin: 0; color: #2c3e50;">Selamat datang, {{ username }}</h2>
+        </div>
+        <a href="{{ url_for('logout') }}" style="color: #f44336; text-decoration: none; border: 1px solid #f44336; padding: 8px 15px; border-radius: 5px; font-weight: bold;">Logout</a>
+    </div>
+
+    <hr style="border: 0; height: 1px; background: #ddd; margin: 20px 0;">
+
+    <!-- Tampilan Jam & Tanggal Real-Time -->
+    <div style="text-align: center; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px; border-top: 4px solid #4CAF50;">
+        <p style="margin: 0; color: #7f8c8d; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: bold;">Waktu Saat Ini (Real-Time)</p>
+        <h1 id="live-clock" style="margin: 10px 0 0 0; font-size: 54px; color: #2c3e50; font-family: monospace; letter-spacing: 2px;">00:00:00</h1>
+        <p id="live-date" style="margin: 5px 0 0 0; color: #95a5a6; font-size: 16px; font-weight: bold;">Memuat tanggal...</p>
+    </div>
+
+    <!-- Notifikasi Sukses -->
+    {% if pesan_sukses %}
+        <div style="color: #27ae60; font-weight: bold; padding: 15px; background-color: #e8f5e9; border-radius: 4px; margin-bottom: 20px; border-left: 5px solid #27ae60;">
+            ✅ {{ pesan_sukses }}
+        </div>
+    {% endif %}
+
+    <!-- Notifikasi Gagal (Di luar jam absen) -->
+    {% if pesan_error %}
+        <div style="color: #c0392b; font-weight: bold; padding: 15px; background-color: #ffebee; border-radius: 4px; margin-bottom: 20px; border-left: 5px solid #c0392b;">
+            ❌ {{ pesan_error }}
+        </div>
+    {% endif %}
+
+    <!-- Panel Aksi Absen -->
+    <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
+        <h3 style="margin-top: 0; color: #2c3e50;">Silakan Klik untuk Absen:</h3>
+        <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">
+            Batas Waktu: <strong>Absen Masuk (06.00 - 08.00)</strong> | <strong>Absen Keluar (06.00 - 08.00)</strong>
+        </p>
+        
+        <form method="POST">
+            <button type="submit" name="jenis_absen" value="Masuk" style="padding: 15px 30px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s;">
+                Absen Masuk
+            </button>
+            <button type="submit" name="jenis_absen" value="Keluar" style="padding: 15px 30px; background-color: #ff9800; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 15px; font-weight: bold; transition: 0.2s;">
+                Absen Keluar
+            </button>
+        </form>
+    </div>
+
+    <!-- Tabel Riwayat -->
+    <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h3 style="margin-top: 0; color: #2c3e50;">Riwayat Absensi Anda:</h3>
+        <table border="1" cellpadding="12" cellspacing="0" style="width: 100%; text-align: left; border-collapse: collapse; border: 1px solid #ddd;">
+            <tr style="background-color: #f8f9fa;">
+                <th style="border-bottom: 2px solid #ddd; color: #2c3e50;">Jenis Absen</th>
+                <th style="border-bottom: 2px solid #ddd; color: #2c3e50;">Waktu Tercatat di Server</th>
+            </tr>
+            {% for data in riwayat %}
+            <tr>
+                <td style="border-bottom: 1px solid #ddd;">
+                    {% if data.jenis == 'Masuk' %}
+                        <span style="color: #27ae60; font-weight: bold;">✔ Masuk</span>
+                    {% else %}
+                        <span style="color: #e67e22; font-weight: bold;">✖ Keluar</span>
+                    {% endif %}
+                </td>
+                <td style="border-bottom: 1px solid #ddd; color: #555; font-family: monospace;">{{ data.waktu }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2" style="text-align: center; color: #7f8c8d; padding: 20px;">Belum ada riwayat absen untuk sesi ini.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- SCRIPT JAVASCRIPT UNTUK JAM REAL-TIME -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            
+            // 1. Format Jam (HH:MM:SS)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // 2. Format Hari dan Tanggal (Bahasa Indonesia)
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('id-ID', options);
+            document.getElementById('live-date').textContent = dateString;
+        }
+
+        // Perbarui setiap 1000 milidetik (1 detik)
+        setInterval(updateClock, 1000);
+        
+        // Jalankan fungsi langsung saat halaman pertama kali dimuat agar tidak menunggu 1 detik
+        updateClock();
+    </script>
+</body>
+</html>

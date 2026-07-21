@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Tim Media AF</title>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 100px; background-color: #f9f9f9;">
+    <div style="display: inline-block; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <h2>Portal Absensi Tim Media</h2>
+        <p style="color: #666; margin-bottom: 30px;">Silakan login menggunakan akun  Anda.</p>
+        
+        {% if error %}
+            <div style="color: #f44336; font-weight: bold; margin-bottom: 20px; background-color: #ffebee; padding: 10px; border-radius: 4px;">
+                ⚠️ {{ error }}
+            </div>
+        {% endif %}
+        
+        <form method="POST">
+            <div style="margin-bottom: 15px;">
+                <input type="text" name="username" placeholder="Username" required 
+                       style="padding: 12px; width: 280px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <input type="password" name="password" placeholder="Password" required 
+                       style="padding: 12px; width: 280px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <button type="submit" style="padding: 12px 30px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%;">
+                Login
+            </button>
+        </form>
+    </div>
+</body>
+</html>
