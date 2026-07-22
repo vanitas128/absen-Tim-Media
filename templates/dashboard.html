@@ -5,6 +5,8 @@
     <title>Dashboard Absensi</title>
 </head>
 <body style="font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; color: #333;">
+
+    <!-- Header / Navbar -->
     <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div>
             <h2 style="margin: 0; color: #2c3e50;">Selamat datang, {{ username }}</h2>
@@ -28,7 +30,7 @@
         </div>
     {% endif %}
 
-    <!-- Notifikasi Gagal (Di luar jam absen) -->
+    <!-- Notifikasi Gagal -->
     {% if pesan_error %}
         <div style="color: #c0392b; font-weight: bold; padding: 15px; background-color: #ffebee; border-radius: 4px; margin-bottom: 20px; border-left: 5px solid #c0392b;">
             ❌ {{ pesan_error }}
@@ -39,17 +41,27 @@
     <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
         <h3 style="margin-top: 0; color: #2c3e50;">Silakan Klik untuk Absen:</h3>
         <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">
-            Batas Waktu: <strong>Absen Masuk (06.00 - 08.00)</strong> | <strong>Absen Keluar (06.00 - 08.00)</strong>
+            Batas Waktu: <strong>Absen Masuk (06.00 - 07.00)</strong> | <strong>Absen Keluar (13.00 - 17.00)</strong>
         </p>
         
         <form method="POST">
-            <button type="submit" name="jenis_absen" value="Masuk" style="padding: 15px 30px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s;">
-                Absen Masuk
-            </button>
-            <button type="submit" name="jenis_absen" value="Keluar" style="padding: 15px 30px; background-color: #ff9800; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 15px; font-weight: bold; transition: 0.2s;">
-                Absen Keluar
-                <input type="text" name="alasan" placeholder="Isi alasan jika Anda datang terlambat...">
-            </button>
+            <!-- Box Input Alasan Keterlambatan -->
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label for="alasan" style="display: block; font-weight: bold; margin-bottom: 8px; color: #2c3e50;">
+                    Alasan Keterlambatan:
+                </label>
+                <input type="text" id="alasan" name="alasan" placeholder="Wajib diisi jika Anda absen masuk lewat dari batas waktu..." style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px;">
+            </div>
+
+            <!-- Tombol Absen -->
+            <div>
+                <button type="submit" name="jenis_absen" value="Masuk" style="padding: 12px 25px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; margin-right: 10px; transition: 0.2s;">
+                    Absen Masuk
+                </button>
+                <button type="submit" name="jenis_absen" value="Keluar" style="padding: 12px 25px; background-color: #ff9800; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s;">
+                    Absen Keluar
+                </button>
+            </div>
         </form>
     </div>
 
@@ -80,27 +92,20 @@
         </table>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT UNTUK JAM REAL-TIME -->
+    <!-- Script Jam Real-Time -->
     <script>
         function updateClock() {
             const now = new Date();
-            
-            // 1. Format Jam (HH:MM:SS)
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds}`;
             
-            // 2. Format Hari dan Tanggal (Bahasa Indonesia)
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const dateString = now.toLocaleDateString('id-ID', options);
             document.getElementById('live-date').textContent = dateString;
         }
-
-        // Perbarui setiap 1000 milidetik (1 detik)
         setInterval(updateClock, 1000);
-        
-        // Jalankan fungsi langsung saat halaman pertama kali dimuat agar tidak menunggu 1 detik
         updateClock();
     </script>
 </body>
