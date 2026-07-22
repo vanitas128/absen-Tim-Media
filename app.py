@@ -14,8 +14,11 @@ app.secret_key = 'kunci_rahasia_untuk_sesi'
 
 # Data user
 users = {
-    'Subiyan': 'password123',
-    'karyawan2': 'password123'
+    'Subiyan': '77777',
+    'Pamy': '88888',
+    'Fakhri': '99999',
+    'Tomy': '00000',
+    'azam': '11111'
 }
 
 # --- FUNGSI MENGHUBUNGKAN KE GOOGLE SHEETS ---
