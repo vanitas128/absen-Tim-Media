@@ -5,23 +5,20 @@ from google.oauth2.service_account import Credentials
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, time, timedelta, timezone
 
-# --- KUNCI JALUR FOLDER TEMPLATES UNTUK VERCEL ---
 base_dir = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(base_dir, 'templates')
 
 app = Flask(__name__, template_folder=template_dir)
 app.secret_key = 'kunci_rahasia_untuk_sesi'
 
-# Data user
 users = {
-    'Subiyan': '77777',
+   'Subiyan': '77777',
     'Pamy': '88888',
     'Fakhri': '99999',
     'Tomy': '00000',
     'azam': '11111'
 }
 
-# --- FUNGSI MENGHUBUNGKAN KE GOOGLE SHEETS ---
 def get_sheet():
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -29,12 +26,11 @@ def get_sheet():
     ]
     kunci_rahasia = os.environ.get('GOOGLE_CREDENTIALS')
     if not kunci_rahasia:
-        raise Exception("Kunci rahasia GOOGLE_CREDENTIALS belum dipasang di Vercel!")
+        raise Exception("Kunci JSON belum terpasang di Vercel!")
     
     creds_dict = json.loads(kunci_rahasia)
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
-    
     return client.open("Data Absensi Karyawan").sheet1
 
 @app.route('/')
@@ -75,7 +71,7 @@ def dashboard():
         waktu_str = waktu_sekarang.strftime("%Y-%m-%d %H:%M:%S")
         
         jenis_absen = request.form['jenis_absen']
-        alasan = request.form.get('alasan', '').strip()  # Mengambil alasan dari form
+        alasan = request.form.get('alasan', '').strip()
         status_absen = "Tepat Waktu"
         
         batas_awal_masuk = time(6, 0)
@@ -83,19 +79,15 @@ def dashboard():
         batas_awal_keluar = time(13, 0)
         batas_akhir_keluar = time(17, 0)
 
-        # Cek Jam Absen
         if jenis_absen == 'Masuk':
             if jam_sekarang < batas_awal_masuk:
                 pesan_error = "Belum waktunya absen masuk."
             elif jam_sekarang > batas_akhir_masuk:
-                status_absen = "Terlambat"
-                
-                # SAKLAR VALIDASI ALASAN:
-                # Jika jam > 07.00 DAN kolom alasan kosong -> DITOLAK
+                status_absen = "Terlambat Masuk"
                 if not alasan:
-                    pesan_error = "Anda terlambat! Wajib mengisi kolom alasan keterlambatan sebelum absen."
+                    pesan_error = "Anda terlambat masuk! Wajib mengisi kolom alasan terlebih dahulu."
                 else:
-                    pesan_sukses = f"Absen Masuk (Terlambat) berhasil dicatat pada {waktu_str}"
+                    pesan_sukses = f"Absen Masuk (Terlambat) dicatat pada {waktu_str}"
             else:
                 pesan_sukses = f"Absen Masuk dicatat pada {waktu_str}"
                 
@@ -103,21 +95,22 @@ def dashboard():
             if jam_sekarang < batas_awal_keluar:
                 pesan_error = "Belum waktunya absen keluar."
             elif jam_sekarang > batas_akhir_keluar:
-                pesan_error = "Waktu absen keluar sudah habis."
+                status_absen = "Lewat Waktu Keluar (Lembur)"
+                if not alasan:
+                    pesan_error = "Sudah lewat waktu pulang! Wajib mengisi alasan (misal: lembur) terlebih dahulu."
+                else:
+                    pesan_sukses = f"Absen Keluar (Lewat Waktu) dicatat pada {waktu_str}"
             else:
                 pesan_sukses = f"Absen Keluar dicatat pada {waktu_str}"
 
-        # Jika lolos validasi (tidak ada error), simpan ke Google Sheets
+        # Menyimpan ke Google Sheets jika tidak ada error dari jam dan alasan
         if not pesan_error:
             try:
                 sheet = get_sheet()
-                # Jika tepat waktu / keluar, alasan diisi tanda min (-)
-                alasan_final = alasan if (jenis_absen == 'Masuk' and status_absen == 'Terlambat') else "-"
-                
-                # Simpan 5 data: [Waktu, Username, Jenis, Status, Alasan]
+                alasan_final = alasan if (status_absen != 'Tepat Waktu') else "-"
                 sheet.append_row([waktu_str, username, jenis_absen, status_absen, alasan_final])
             except Exception as e:
-                pesan_error = f"Gagal menyimpan ke spreadsheet: Cek Vercel Logs."
+                pesan_error = "Gagal terhubung ke Google Sheets. Cek pengaturan JSON di Vercel."
                 pesan_sukses = None
                 
     return render_template('dashboard.html', username=username, pesan_sukses=pesan_sukses, pesan_error=pesan_error)
