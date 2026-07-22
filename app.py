@@ -14,7 +14,7 @@ app.secret_key = 'kunci_rahasia_untuk_sesi'
 
 # Data user
 users = {
-    'karyawan1': 'password123',
+    'Subiyan': 'password123',
     'karyawan2': 'password123'
 }
 
