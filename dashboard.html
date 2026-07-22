@@ -39,7 +39,7 @@
     <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
         <h3 style="margin-top: 0; color: #2c3e50;">Silakan Klik untuk Absen:</h3>
         <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">
-            Batas Waktu: <strong>Absen Masuk (06.00 - 08.00)</strong> | <strong>Absen Keluar (12.00 - 17.00)</strong>
+            Batas Waktu: <strong>Absen Masuk (06.00 - 08.00)</strong> | <strong>Absen Keluar (06.00 - 08.00)</strong>
         </p>
         
         <form method="POST">
@@ -48,6 +48,7 @@
             </button>
             <button type="submit" name="jenis_absen" value="Keluar" style="padding: 15px 30px; background-color: #ff9800; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 15px; font-weight: bold; transition: 0.2s;">
                 Absen Keluar
+                <input type="text" name="alasan" placeholder="Isi alasan jika Anda datang terlambat...">
             </button>
         </form>
     </div>
@@ -78,6 +79,23 @@
             {% endfor %}
         </table>
     </div>
+    <!-- Bagian Khusus Alasan Terlambat -->
+<div style="margin-top: 15px; margin-bottom: 20px; text-align: left;">
+    <label for="alasan" style="display: block; font-weight: bold; margin-bottom: 8px; color: #333;">
+        Alasan Keterlambatan:
+    </label>
+    <input type="text" id="alasan" name="alasan" placeholder="Wajib diisi jika Anda absen masuk lewat dari batas waktu..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+</div>
+
+<!-- Bagian Tombol Absen -->
+<div>
+    <button type="submit" name="jenis_absen" value="Masuk" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 10px;">
+        Absen Masuk
+    </button>
+    <button type="submit" name="jenis_absen" value="Keluar" style="background-color: #ff9800; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+        Absen Keluar
+    </button>
+</div>
 
     <!-- SCRIPT JAVASCRIPT UNTUK JAM REAL-TIME -->
     <script>
