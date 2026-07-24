@@ -110,7 +110,7 @@ def dashboard():
                 alasan_final = alasan if (status_absen != 'Tepat Waktu') else "-"
                 sheet.append_row([waktu_str, username, jenis_absen, status_absen, alasan_final])
             except Exception as e:
-                pesan_error = "Gagal terhubung ke Google Sheets. Cek pengaturan JSON di Vercel."
+                pesan_error = f"Detail Error: {str(e)}"
                 pesan_sukses = None
                 
     return render_template('dashboard.html', username=username, pesan_sukses=pesan_sukses, pesan_error=pesan_error)
