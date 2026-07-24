@@ -29,6 +29,10 @@ def get_sheet():
         raise Exception("Kunci JSON belum terpasang di Vercel!")
     
     creds_dict = json.loads(kunci_rahasia)
+    
+    # --- BARIS SAKTI UNTUK MEMPERBAIKI FORMAT KUNCI VERCEL ---
+    creds_dict['private_key'] = creds_dict['private_key'].replace('\\n', '\n')
+    
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
     return client.open("Data Absensi Karyawan").sheet1
